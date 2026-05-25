@@ -9,9 +9,17 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="버킷볼가챠">
-<meta property="og:title" content="버킷볼가챠">
-<meta property="og:description" content="뽑으면 이루어지는 버킷리스트">
 <meta property="og:type" content="website">
+<meta property="og:title" content="버킷볼GACHA">
+<meta property="og:description" content="뽑으면 이루어지는 버킷리스트. 소중한 꿈을 버킷볼에 담고, 매일 하나씩 가챠로 뽑아보세요.">
+<meta property="og:image" content="https://chulpan86.github.io/bucketball-gacha/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://chulpan86.github.io/bucketball-gacha/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="버킷볼GACHA">
+<meta name="twitter:description" content="뽑으면 이루어지는 버킷리스트">
+<meta name="twitter:image" content="https://chulpan86.github.io/bucketball-gacha/og-image.png">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
@@ -43,6 +51,8 @@
   .top-eyebrow{font-size:10px; color:var(--ink3); font-weight:600; letter-spacing:1px;}
   .top-name{font-size:21px; font-weight:700; color:var(--ink); letter-spacing:-0.5px;}
   .top-sub{font-size:11px; color:var(--ink2); margin-top:1px;}
+  .logo{font-size:25px; font-weight:800; color:var(--ink); letter-spacing:-0.8px; line-height:1;}
+  .logo-accent{color:var(--blue); margin-left:2px; font-weight:800;}
   .top-actions{display:flex; gap:9px;}
   .circ{width:42px;height:42px;border:none;border-radius:50%;background:linear-gradient(145deg,#FFFFFF,#E3ECF9);
     display:flex;align-items:center;justify-content:center;color:#5B7BB0;cursor:pointer;
@@ -50,7 +60,7 @@
   .circ:active{transform:scale(0.92);}
   .circ i{font-size:21px;}
 
-  .screen{position:absolute; top:calc(env(safe-area-inset-top, 0px) + 46px); left:0; right:0; bottom:0; display:none; flex-direction:column;}
+  .screen{position:absolute; top:calc(env(safe-area-inset-top, 0px) + 10px); left:0; right:0; bottom:0; display:none; flex-direction:column;}
   .screen.on{display:flex;}
   .scroll{flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;}
 
@@ -77,10 +87,10 @@
   .btn-primary.dim{background:linear-gradient(145deg,#B7C4DC,#9AA9C6)!important;box-shadow:none!important;cursor:default;}
 
   /* GACHA */
-  .pill{margin:0 20px 6px; background:rgba(255,255,255,0.55); color:#4A6094; border-radius:16px; padding:11px 15px;
-    font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px;
+  .pill{margin:2px 20px 6px; background:rgba(255,255,255,0.55); color:#4A6094; border-radius:18px; padding:16px 18px;
+    font-size:15px; font-weight:600; display:flex; align-items:center; gap:10px;
     box-shadow:inset 0 1px 0 rgba(255,255,255,0.9), 0 3px 8px rgba(150,175,215,0.2);}
-  .dot{width:7px;height:7px;border-radius:50%;background:#C2D2EC;display:inline-block;transition:background .2s;}
+  .dot{width:8px;height:8px;border-radius:50%;background:#C2D2EC;display:inline-block;transition:background .2s;}
   .gacha-stage{position:relative; flex:1; min-height:0; margin:0 14px; display:flex; flex-direction:column; justify-content:center; align-items:center;}
   #machine{position:relative; width:260px; height:336px; margin-bottom:4px;}
   .m-body{position:absolute; inset:0; background:linear-gradient(160deg,#DCE8FB,#B9CDF0); border-radius:34px;
@@ -105,7 +115,6 @@
     box-shadow:inset 0 4px 10px rgba(255,255,255,0.9), inset 0 -8px 16px rgba(130,160,210,0.4), 0 8px 18px rgba(120,150,200,0.4);}
   #ball .seam{position:absolute; top:38px; left:9px; right:9px; height:5px; background:rgba(255,255,255,0.7); border-radius:3px;}
   #ball .glint{position:absolute; top:13px; left:18px; width:26px; height:15px; background:rgba(255,255,255,0.75); border-radius:50%; filter:blur(2px);}
-  #hint{font-size:12px; color:#7C92B6; opacity:0; transition:opacity .4s; display:flex; align-items:center; gap:5px; margin-top:2px;}
   .gacha-foot{padding:10px 22px 22px;}
 
   /* MAKER */
@@ -233,10 +242,6 @@
 </head>
 <body>
 <div id="app">
-  <div class="statusbar">
-    <span>2:27</span>
-    <span class="right"><span class="ic" data-ic="antenna-bars-5" style=""></span><span class="ic" data-ic="wifi" style=""></span><span class="batt">87</span></span>
-  </div>
 
   <!-- ============ ONBOARDING ============ -->
   <section id="onboard" class="screen">
@@ -258,9 +263,7 @@
   <section id="gacha" class="screen">
     <div class="topnav">
       <div class="top-title">
-        <div class="top-eyebrow">GACHA BUCKET LIST</div>
-        <div class="top-name">버킷볼가챠</div>
-        <div class="top-sub">뽑으면 이루어지는 버킷리스트</div>
+        <div class="logo">버킷볼<span class="logo-accent">GACHA</span></div>
       </div>
       <div class="top-actions">
         <button class="circ" id="navAdd" aria-label="버킷볼 만들기"><span class="ic" data-ic="plus" style=""></span></button>
@@ -291,7 +294,6 @@
         <div class="m-slot"></div>
         <div id="ball"><div class="seam"></div><div class="glint"></div></div>
       </div>
-      <div id="hint"><span class="ic" data-ic="hand-finger" style=""></span>공을 톡 눌러 열어보세요</div>
     </div>
 
     <div class="gacha-foot">
@@ -750,7 +752,7 @@
 
   /* ---------------- GACHA ---------------- */
   var spinning=false, picked=null, ballCounted=false;
-  var lever=$('lever'), machine=$('machine'), ballEl=$('ball'), hint=$('hint');
+  var lever=$('lever'), machine=$('machine'), ballEl=$('ball');
   var statusText=$('statusText'), spinBtn=$('spinBtn'), dots=document.querySelectorAll('#dots .dot');
   var caps=document.querySelectorAll('.cap');
 
@@ -759,7 +761,6 @@
     else {
       spinning=false; picked=null; ballCounted=false;
       ballEl.style.opacity='0'; ballEl.style.transform='translateX(-50%) scale(0.5)'; ballEl.style.bottom='14px';
-      hint.style.opacity='0';
       dots.forEach(function(d){ d.style.background='#C2D2EC'; });
       $('spinLabel').textContent='가챠 돌리기'; statusText.textContent='오늘 1번 뽑을 수 있어요';
       spinBtn.classList.remove('dim'); spinBtn.style.cursor='pointer';
@@ -805,7 +806,9 @@
   }
   function spinDone(){
     spinning=false; state.usedToday=true; state.lastSpinDay=todayStr(); save();
-    hint.style.opacity='1'; lockGacha();
+    statusText.textContent='공을 꾹 눌러 열어보세요';
+    $('spinLabel').textContent='오늘 완료!';
+    spinBtn.classList.add('dim'); dots.forEach(function(d){ d.style.background='#6E97D6'; });
   }
 
   /* ---------------- RESULT OVERLAY ---------------- */
@@ -822,7 +825,8 @@
     overlay.classList.add('on');
     requestAnimationFrame(function(){ cardInner.style.transform='scale(1) rotate(0deg)'; cardInner.style.opacity='1';
       setTimeout(function(){ todayTag.style.opacity='1'; cardBtns.style.opacity='1'; startHolo(); },400); });
-    if(!ballCounted){ picked.drawn=true; save(); ballCounted=true; }
+    if(!ballCounted){ picked.drawn=true; state.openedToday=true; save(); ballCounted=true; }
+    statusText.textContent='내일 다시 뽑을 수 있어요';
   }
   var holoT=0,holoRAF;
   function startHolo(){ cancelAnimationFrame(holoRAF);
