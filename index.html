@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>버킷볼가챠 — 뽑으면 이루어지는 버킷리스트</title>
+<meta name="description" content="뽑으면 이루어지는 버킷리스트. 소중한 꿈을 버킷볼에 담고, 매일 하나씩 가챠로 뽑아보세요.">
+<meta name="theme-color" content="#EAF1FB">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="버킷볼가챠">
+<meta property="og:title" content="버킷볼가챠">
+<meta property="og:description" content="뽑으면 이루어지는 버킷리스트">
+<meta property="og:type" content="website">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+  :root{
+    --bg1:#F4F8FF; --bg2:#E7EFFB;
+    --ink:#3B4A66; --ink2:#7184A6; --ink3:#9DB0CE;
+    --blue:#3F6FC4; --blue2:#5B8DE0;
+    --warm:#E08A4D; --warm2:#C26A2E;
+    --green:#5FB89A;
+    --glass:linear-gradient(155deg, rgba(255,255,255,0.62), rgba(210,228,252,0.38));
+    --card-sh:0 16px 36px rgba(60,90,160,0.5), inset 0 2px 8px rgba(255,255,255,0.85), inset 0 -8px 18px rgba(150,180,230,0.3);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; height:100%; font-family:'Pretendard',-apple-system,sans-serif; color:var(--ink);
+    background:linear-gradient(170deg,#EAF1FB 0%,#DCE7F7 100%); overflow:hidden; user-select:none;}
+  #app{position:relative; width:100%; height:100%; max-width:440px; margin:0 auto;
+    background:linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 100%); overflow:hidden;}
+  button{font-family:inherit;}
+  .ic{display:inline-flex;align-items:center;justify-content:center;font-size:20px;line-height:0;vertical-align:middle;}
+  .ic svg{width:1em;height:1em;}
+  input{font-family:inherit;}
+  .statusbar{position:absolute; top:0; left:0; right:0; z-index:5; display:flex; justify-content:space-between; align-items:center; padding:calc(env(safe-area-inset-top, 0px) + 14px) 22px 8px; font-size:13px; font-weight:600; color:#5B6B86;}
+  .statusbar .right{display:flex; gap:5px; align-items:center;}
+  .batt{background:#4D7CC7;color:#fff;border-radius:5px;padding:1px 5px;font-size:11px;}
+
+  .topnav{display:flex; justify-content:space-between; align-items:center; padding:14px 20px 14px;}
+  .top-title{line-height:1.05;}
+  .top-eyebrow{font-size:10px; color:var(--ink3); font-weight:600; letter-spacing:1px;}
+  .top-name{font-size:21px; font-weight:700; color:var(--ink); letter-spacing:-0.5px;}
+  .top-sub{font-size:11px; color:var(--ink2); margin-top:1px;}
+  .top-actions{display:flex; gap:9px;}
+  .circ{width:42px;height:42px;border:none;border-radius:50%;background:linear-gradient(145deg,#FFFFFF,#E3ECF9);
+    display:flex;align-items:center;justify-content:center;color:#5B7BB0;cursor:pointer;
+    box-shadow:3px 3px 7px rgba(150,175,215,0.45),-3px -3px 7px rgba(255,255,255,0.9); transition:transform .12s;}
+  .circ:active{transform:scale(0.92);}
+  .circ i{font-size:21px;}
+
+  .screen{position:absolute; top:calc(env(safe-area-inset-top, 0px) + 46px); left:0; right:0; bottom:0; display:none; flex-direction:column;}
+  .screen.on{display:flex;}
+  .scroll{flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+
+  /* ONBOARDING */
+  #onboard{background:linear-gradient(180deg,#EFF4FE,#DCE7F7); align-items:center; justify-content:center; padding:0 30px; text-align:center;}
+  .ob-machine{width:150px;height:150px;border-radius:42px;background:linear-gradient(160deg,#DCE8FB,#B9CDF0);
+    box-shadow:10px 14px 30px rgba(120,150,200,0.45), inset 0 3px 6px rgba(255,255,255,0.85), inset 0 -8px 16px rgba(140,165,210,0.4);
+    display:flex;align-items:center;justify-content:center; margin-bottom:30px; position:relative; animation:bob 3s ease-in-out infinite;}
+  .ob-machine .ball{position:absolute; border-radius:50%;}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-10px) rotate(2deg);}}
+  .ob-eyebrow{font-size:12px;font-weight:600;letter-spacing:3px;color:var(--blue);margin-bottom:10px;}
+  .ob-title{font-size:30px;font-weight:700;color:var(--ink);letter-spacing:-1px;line-height:1.25;margin-bottom:12px;}
+  .ob-desc{font-size:15px;color:var(--ink2);line-height:1.6;margin-bottom:36px;}
+  .ob-note{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:16px;font-size:12px;color:var(--ink3);}
+  .ob-input{width:100%;height:54px;border:none;border-radius:16px;background:rgba(255,255,255,0.9);
+    padding:0 18px;font-size:16px;color:var(--ink);text-align:center;margin-bottom:14px;
+    box-shadow:inset 0 2px 6px rgba(150,175,215,0.28), 0 4px 12px rgba(120,150,200,0.12);}
+  .ob-input:focus{outline:2px solid rgba(91,141,224,0.5);}
+  .btn-primary{width:100%;height:56px;border:none;border-radius:18px;
+    background:linear-gradient(145deg,var(--blue2),var(--blue));color:#fff;font-size:17px;font-weight:600;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    box-shadow:0 8px 18px rgba(80,120,200,0.45), inset 0 2px 3px rgba(255,255,255,0.4), inset 0 -3px 6px rgba(50,90,170,0.5); transition:transform .12s;}
+  .btn-primary:active{transform:scale(0.98);}
+  .btn-primary.dim{background:linear-gradient(145deg,#B7C4DC,#9AA9C6)!important;box-shadow:none!important;cursor:default;}
+
+  /* GACHA */
+  .pill{margin:0 20px 6px; background:rgba(255,255,255,0.55); color:#4A6094; border-radius:16px; padding:11px 15px;
+    font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.9), 0 3px 8px rgba(150,175,215,0.2);}
+  .dot{width:7px;height:7px;border-radius:50%;background:#C2D2EC;display:inline-block;transition:background .2s;}
+  .gacha-stage{position:relative; flex:1; min-height:0; margin:0 14px; display:flex; flex-direction:column; justify-content:center; align-items:center;}
+  #machine{position:relative; width:260px; height:336px; margin-bottom:4px;}
+  .m-body{position:absolute; inset:0; background:linear-gradient(160deg,#DCE8FB,#B9CDF0); border-radius:34px;
+    box-shadow:10px 13px 28px rgba(120,150,200,0.42), inset 0 2px 4px rgba(255,255,255,0.8), inset 0 -7px 14px rgba(140,165,210,0.4);}
+  .m-logo{position:absolute; top:20px; left:50%; transform:translateX(-50%); font-weight:700; font-size:21px; color:#fff; letter-spacing:1px; text-shadow:0 2px 4px rgba(110,140,190,0.6);}
+  #dome{position:absolute; top:54px; left:50%; transform:translateX(-50%); width:200px; height:166px;
+    background:radial-gradient(circle at 35% 28%, rgba(255,255,255,0.85), rgba(220,233,250,0.4) 60%, rgba(190,210,240,0.25));
+    border-radius:100px 100px 30px 30px; box-shadow:inset 0 3px 10px rgba(255,255,255,0.9), inset 0 -8px 16px rgba(150,175,215,0.35); overflow:hidden;}
+  .cap{position:absolute; border-radius:50%;}
+  .dome-glint{position:absolute; top:16px; left:28px; width:52px; height:32px; background:rgba(255,255,255,0.55); border-radius:50%; filter:blur(4px);}
+  .m-tray{position:absolute; bottom:62px; left:50%; transform:translateX(-50%); width:172px; height:74px;
+    background:linear-gradient(160deg,#CADAF4,#9DB8E5); border-radius:18px; box-shadow:inset 0 2px 4px rgba(255,255,255,0.7), inset 0 -4px 8px rgba(130,160,210,0.4);}
+  .m-lever-wrap{position:absolute; bottom:72px; left:50%; transform:translateX(-50%); width:58px; height:58px;}
+  #lever{width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFE89A,#F2C84E);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:4px 4px 9px rgba(150,130,60,0.4), inset 0 2px 3px rgba(255,255,255,0.85), inset 0 -3px 6px rgba(190,150,40,0.4);}
+  #lever .bar{width:8px;height:30px;background:#fff;border-radius:4px;}
+  .m-slot{position:absolute; bottom:20px; left:50%; transform:translateX(-50%); width:74px; height:28px;
+    background:linear-gradient(160deg,#8FA9D8,#6B89C2); border-radius:9px; box-shadow:inset 0 2px 5px rgba(60,90,150,0.5);}
+  #ball{position:absolute; opacity:0; bottom:14px; left:50%; transform:translateX(-50%) scale(0.5); width:88px;height:88px;border-radius:50%;cursor:pointer;z-index:5;
+    background:radial-gradient(circle at 34% 28%, rgba(255,255,255,0.95), rgba(200,220,248,0.6) 55%, rgba(160,190,235,0.45));
+    box-shadow:inset 0 4px 10px rgba(255,255,255,0.9), inset 0 -8px 16px rgba(130,160,210,0.4), 0 8px 18px rgba(120,150,200,0.4);}
+  #ball .seam{position:absolute; top:38px; left:9px; right:9px; height:5px; background:rgba(255,255,255,0.7); border-radius:3px;}
+  #ball .glint{position:absolute; top:13px; left:18px; width:26px; height:15px; background:rgba(255,255,255,0.75); border-radius:50%; filter:blur(2px);}
+  #hint{font-size:12px; color:#7C92B6; opacity:0; transition:opacity .4s; display:flex; align-items:center; gap:5px; margin-top:2px;}
+  .gacha-foot{padding:10px 22px 22px;}
+
+  /* MAKER */
+  .sec-pad{padding:0 20px 26px;}
+  .preview-wrap{display:flex; justify-content:center; margin:2px 0 18px;}
+  .pv-card{position:relative; width:188px; border-radius:24px; padding:14px; background:var(--glass);
+    border:1.5px solid rgba(255,255,255,0.7); overflow:hidden;
+    box-shadow:0 16px 34px rgba(60,90,160,0.32), inset 0 2px 7px rgba(255,255,255,0.85), inset 0 -6px 14px rgba(150,180,230,0.3);}
+  .holo-streak{position:absolute; inset:0; background:linear-gradient(120deg,transparent 38%,rgba(255,255,255,0.4) 50%,transparent 62%); pointer-events:none;}
+  .card-badge{background:rgba(255,255,255,0.7);border-radius:8px;font-size:10px;padding:3px 9px;color:var(--blue);font-weight:600;}
+  .card-no{font-size:12px;font-weight:600;color:#5B7BB0;}
+  .media{position:relative; border-radius:16px; display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(circle at 40% 28%, rgba(255,243,224,0.9), rgba(205,225,250,0.5));
+    box-shadow:inset 0 2px 7px rgba(255,255,255,0.85), inset 0 -5px 13px rgba(150,180,230,0.3); overflow:hidden;}
+  .media img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;}
+  .form-card{background:linear-gradient(155deg,rgba(255,255,255,0.66),rgba(225,235,252,0.46));
+    border:1.5px solid rgba(255,255,255,0.72); border-radius:22px; padding:16px;
+    box-shadow:0 10px 26px rgba(120,150,200,0.2), inset 0 2px 5px rgba(255,255,255,0.8);}
+  .lbl{font-size:12px; font-weight:600; color:#6B7E9E; display:block; margin-bottom:6px;}
+  .inp{width:100%; height:44px; border:none; border-radius:14px; background:rgba(255,255,255,0.9); padding:0 14px; font-size:14px; color:var(--ink);
+    box-shadow:inset 0 2px 5px rgba(150,175,215,0.25);}
+  .inp:focus{outline:2px solid rgba(91,141,224,0.45);}
+  .icon-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:9px;}
+  .iconPick{height:48px;border:none;border-radius:14px;background:rgba(255,255,255,0.85);color:#5B7BB0;font-size:22px;cursor:pointer;
+    box-shadow:inset 0 2px 4px rgba(150,175,215,0.22);display:flex;align-items:center;justify-content:center;transition:all .15s;}
+  .iconPick:active{transform:scale(0.92);}
+  .iconPick.sel{background:linear-gradient(145deg,var(--blue2),var(--blue));color:#fff;}
+  .photo-btn{flex:1;height:46px;border:1.5px dashed rgba(120,150,200,0.45);border-radius:14px;background:rgba(255,255,255,0.5);
+    color:#5B7BB0;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+  .photo-btn.done{border-style:solid;color:var(--blue);}
+  .mini-trash{width:46px;height:46px;border:none;border-radius:14px;background:rgba(255,255,255,0.7);color:var(--ink3);font-size:18px;cursor:pointer;}
+
+  .shelf{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  .shelf-item{cursor:pointer;}
+  .shelf-ball{position:relative;width:100%;padding-top:100%;border-radius:50%;overflow:hidden;
+    box-shadow:inset 0 3px 7px rgba(255,255,255,0.85), 0 5px 11px rgba(120,150,200,0.28);}
+  .shelf-ball .inside{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:26px;}
+  .rank{position:absolute;top:-3px;left:-3px;width:21px;height:21px;border-radius:50%;background:#fff;color:#5B7BB0;font-size:10px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(120,150,200,0.3);z-index:3;}
+  .done-ring{position:absolute;inset:0;border-radius:50%;border:3px solid var(--green);box-shadow:0 0 0 2px rgba(95,184,154,0.25);z-index:2;}
+  .check-badge{position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;border-radius:50%;background:var(--green);color:#fff;font-size:13px;
+    display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(60,140,110,0.4);z-index:3;}
+  .shelf-name{font-size:10px;color:#6B7E9E;text-align:center;margin-top:6px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .dragging{opacity:0.4;}
+  .drag-hint{font-size:11px;color:var(--ink3);display:flex;align-items:center;gap:4px;}
+
+  /* MYPAGE */
+  .profile{background:linear-gradient(155deg,rgba(255,255,255,0.72),rgba(223,234,252,0.5));
+    border:1.5px solid rgba(255,255,255,0.75); border-radius:24px; padding:18px;
+    box-shadow:0 12px 28px rgba(120,150,200,0.25), inset 0 2px 6px rgba(255,255,255,0.85);
+    display:flex; align-items:center; gap:14px; margin-bottom:18px;}
+  .avatar{width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFE2B8,#E89F5C);
+    box-shadow:inset 0 2px 5px rgba(255,255,255,0.7), inset 0 -4px 9px rgba(180,120,60,0.4), 0 5px 12px rgba(180,140,90,0.3);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;}
+  .stats{display:flex; gap:10px; margin-bottom:18px;}
+  .stat{flex:1; background:rgba(255,255,255,0.6); border-radius:16px; padding:13px; text-align:center; box-shadow:inset 0 1px 0 rgba(255,255,255,0.9);}
+  .stat .n{font-size:22px; font-weight:700;}
+  .stat .l{font-size:11px; color:#8497B5; margin-top:2px;}
+  .gallery{display:grid; grid-template-columns:repeat(2,1fr); gap:12px;}
+  .gal-card{position:relative;border-radius:18px;padding:11px;background:var(--glass);border:1px solid rgba(255,255,255,0.7);
+    box-shadow:0 8px 18px rgba(60,90,160,0.18), inset 0 2px 5px rgba(255,255,255,0.8);overflow:hidden;cursor:pointer;transition:transform .12s;}
+  .gal-card:active{transform:scale(0.97);}
+  .gal-card.locked{filter:saturate(0.5);}
+  .empty{text-align:center; color:#A9B8D2; font-size:13px; padding:30px 0;}
+
+  /* MODALS */
+  .overlay{position:absolute; inset:0; background:rgba(45,65,110,0.55); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    display:none; flex-direction:column; align-items:center; justify-content:center; z-index:40; padding:0 18px;}
+  .overlay.on{display:flex;}
+  #todayTag{opacity:0; transition:opacity .5s; color:#E8F0FF; font-size:14px; font-weight:600; letter-spacing:3px; margin-bottom:16px;}
+  #cardInner{width:280px; transform:scale(0.55) rotate(-7deg); opacity:0; transition:all .6s cubic-bezier(0.34,1.56,0.64,1); perspective:900px;}
+  .glass-card{position:relative; border-radius:26px; padding:18px; background:var(--glass); border:1.5px solid rgba(255,255,255,0.7);
+    box-shadow:var(--card-sh); overflow:hidden; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);}
+  #holoShine{position:absolute; inset:0; pointer-events:none; background-size:250% 250%; background-position:0% 0%;
+    background:linear-gradient(115deg, transparent 32%, rgba(255,255,255,0.7) 44%, rgba(180,225,255,0.6) 50%, rgba(225,200,255,0.6) 56%, transparent 68%);}
+  .chip{border-radius:8px;font-size:11px;padding:4px 9px;font-weight:600;}
+  .chip.cost{background:rgba(224,138,77,0.16);color:var(--warm2);}
+  .chip.dday{background:rgba(77,124,199,0.14);color:var(--blue);}
+  .chip.done{background:rgba(95,184,154,0.18);color:#2E7D5F;}
+  .ov-btns{opacity:0; transition:opacity .5s; display:flex; gap:9px; margin-top:20px;}
+  .ov-btn{height:46px;padding:0 20px;border:none;border-radius:16px;font-weight:600;font-size:14px;cursor:pointer;}
+  .ov-btn.ghost{background:rgba(255,255,255,0.25);color:#fff;}
+  .ov-btn.solid{background:#fff;color:var(--blue);box-shadow:0 6px 14px rgba(0,0,0,0.15);}
+
+  /* DETAIL SHEET */
+  #detailSheet{position:absolute; inset:0; z-index:45; display:none; align-items:flex-end; justify-content:center;
+    background:rgba(45,65,110,0.45); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);}
+  #detailSheet.on{display:flex;}
+  .sheet{width:100%; max-width:440px; background:linear-gradient(180deg,#F8FBFF,#EAF1FB); border-radius:28px 28px 0 0;
+    padding:10px 22px 26px; transform:translateY(100%); transition:transform .4s cubic-bezier(0.32,0.72,0,1); max-height:88%; overflow-y:auto;}
+  #detailSheet.on .sheet{transform:translateY(0);}
+  .grab{width:40px;height:5px;border-radius:3px;background:rgba(150,175,215,0.4);margin:0 auto 16px;}
+  .detail-card{border-radius:22px; padding:16px; background:var(--glass); border:1.5px solid rgba(255,255,255,0.7); overflow:hidden; position:relative;
+    box-shadow:0 14px 30px rgba(60,90,160,0.28), inset 0 2px 7px rgba(255,255,255,0.85);}
+  .detail-media{border-radius:18px; height:180px; margin-bottom:14px;}
+  .detail-media i{font-size:74px;}
+  .status-banner{display:flex;align-items:center;gap:8px;border-radius:14px;padding:11px 14px;font-size:13px;font-weight:600;margin-bottom:14px;}
+  .status-banner.locked{background:rgba(157,176,206,0.18);color:#6B7E9E;}
+  .status-banner.drawn{background:rgba(77,124,199,0.14);color:var(--blue);}
+  .status-banner.done{background:rgba(95,184,154,0.18);color:#2E7D5F;}
+  .info-row{display:flex;justify-content:space-between;padding:11px 2px;border-bottom:0.5px solid rgba(150,175,215,0.2);font-size:14px;}
+  .info-row .k{color:var(--ink2);}
+  .info-row .v{color:var(--ink);font-weight:600;}
+  .detail-actions{display:flex;gap:9px;margin-top:18px;}
+  .da{flex:1;height:50px;border:none;border-radius:15px;font-weight:600;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+  .da.achieve{background:linear-gradient(145deg,#6FC8A8,#4FA888);color:#fff;box-shadow:0 6px 14px rgba(80,170,140,0.4);}
+  .da.achieve.undo{background:rgba(255,255,255,0.7);color:var(--green);box-shadow:none;}
+  .da.edit{background:rgba(255,255,255,0.8);color:var(--blue);}
+  .da.del{width:50px;flex:none;background:rgba(255,255,255,0.7);color:#D9787C;}
+
+  /* TOAST */
+  #toast{position:absolute; bottom:30px; left:50%; transform:translateX(-50%) translateY(20px); z-index:60;
+    background:rgba(40,55,90,0.92); color:#fff; font-size:13px; font-weight:500; padding:11px 18px; border-radius:14px;
+    opacity:0; transition:all .3s; pointer-events:none; white-space:nowrap;}
+  #toast.on{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  .add-fab{position:absolute; bottom:24px; right:20px; z-index:20; width:58px;height:58px;border:none;border-radius:50%;
+    background:linear-gradient(145deg,var(--blue2),var(--blue)); color:#fff; cursor:pointer;
+    box-shadow:0 10px 22px rgba(80,120,200,0.5), inset 0 2px 3px rgba(255,255,255,0.4); display:flex;align-items:center;justify-content:center;transition:transform .12s;}
+  .add-fab:active{transform:scale(0.92);}
+  .add-fab i{font-size:28px;}
+  .sec-head{display:flex; justify-content:space-between; align-items:center; margin:22px 2px 12px;}
+  .sec-title{font-size:15px; font-weight:700; color:var(--ink);}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="statusbar">
+    <span>2:27</span>
+    <span class="right"><span class="ic" data-ic="antenna-bars-5" style=""></span><span class="ic" data-ic="wifi" style=""></span><span class="batt">87</span></span>
+  </div>
+
+  <!-- ============ ONBOARDING ============ -->
+  <section id="onboard" class="screen">
+    <div class="ob-machine">
+      <span class="ball" style="width:30px;height:30px;background:radial-gradient(circle at 32% 30%,#FFC2C2,#E88A8A);top:42px;left:38px;"></span>
+      <span class="ball" style="width:36px;height:36px;background:radial-gradient(circle at 32% 30%,#AFCCF5,#6E97D6);top:66px;left:72px;"></span>
+      <span class="ball" style="width:28px;height:28px;background:radial-gradient(circle at 32% 30%,#A8E6CC,#5FC4A0);top:84px;left:44px;"></span>
+      <span class="ball" style="width:32px;height:32px;background:radial-gradient(circle at 32% 30%,#FFE0A8,#F0BD66);top:50px;left:80px;"></span>
+    </div>
+    <div class="ob-eyebrow">GACHA BUCKET LIST</div>
+    <div class="ob-title">버킷볼가챠</div>
+    <div class="ob-desc">소중한 꿈을 버킷볼에 담고,<br>매일 하나씩 가챠로 꺼내보세요.</div>
+    <input id="nameInput" class="ob-input" type="text" placeholder="이름을 알려주세요" maxlength="12">
+    <button id="startBtn" class="btn-primary">시작하기</button>
+    <div class="ob-note"><span class="ic" data-ic="lock" style="font-size:14px;"></span>소중한 꿈은 이 디바이스에만 저장됩니다</div>
+  </section>
+
+  <!-- ============ GACHA HOME ============ -->
+  <section id="gacha" class="screen">
+    <div class="topnav">
+      <div class="top-title">
+        <div class="top-eyebrow">GACHA BUCKET LIST</div>
+        <div class="top-name">버킷볼가챠</div>
+        <div class="top-sub">뽑으면 이루어지는 버킷리스트</div>
+      </div>
+      <div class="top-actions">
+        <button class="circ" id="navAdd" aria-label="버킷볼 만들기"><span class="ic" data-ic="plus" style=""></span></button>
+        <button class="circ" id="navMy" aria-label="마이페이지"><span class="ic" data-ic="user" style=""></span></button>
+      </div>
+    </div>
+
+    <div class="pill">
+      <span id="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+      <span id="statusText">오늘 1번 뽑을 수 있어요</span>
+    </div>
+
+    <div class="gacha-stage">
+      <div id="machine">
+        <div class="m-body"></div>
+        <div class="m-logo">GACHA</div>
+        <div id="dome">
+          <div class="cap" style="bottom:9px;left:18px;width:40px;height:40px;background:radial-gradient(circle at 32% 30%,#FFC2C2,#E88A8A);box-shadow:inset -3px -3px 6px rgba(180,90,90,0.4);"></div>
+          <div class="cap" style="bottom:7px;left:62px;width:45px;height:45px;background:radial-gradient(circle at 32% 30%,#AFCCF5,#6E97D6);box-shadow:inset -3px -3px 6px rgba(70,110,170,0.4);"></div>
+          <div class="cap" style="bottom:12px;left:112px;width:38px;height:38px;background:radial-gradient(circle at 32% 30%,#A8E6CC,#5FC4A0);box-shadow:inset -3px -3px 6px rgba(50,150,110,0.35);"></div>
+          <div class="cap" style="bottom:40px;left:40px;width:43px;height:43px;background:radial-gradient(circle at 32% 30%,#FFE0A8,#F0BD66);box-shadow:inset -3px -3px 6px rgba(190,140,50,0.35);"></div>
+          <div class="cap" style="bottom:44px;left:96px;width:40px;height:40px;background:radial-gradient(circle at 32% 30%,#E6BEF0,#C58FD6);box-shadow:inset -3px -3px 6px rgba(150,90,170,0.35);"></div>
+          <div class="cap" style="bottom:74px;left:68px;width:38px;height:38px;background:radial-gradient(circle at 32% 30%,#C2C9F5,#8E97D6);box-shadow:inset -3px -3px 6px rgba(90,100,170,0.35);"></div>
+          <div class="dome-glint"></div>
+        </div>
+        <div class="m-tray"></div>
+        <div class="m-lever-wrap"><div id="lever"><div class="bar"></div></div></div>
+        <div class="m-slot"></div>
+        <div id="ball"><div class="seam"></div><div class="glint"></div></div>
+      </div>
+      <div id="hint"><span class="ic" data-ic="hand-finger" style=""></span>공을 톡 눌러 열어보세요</div>
+    </div>
+
+    <div class="gacha-foot">
+      <button id="spinBtn" class="btn-primary"><span class="ic" data-ic="rotate-clockwise" style=""></span><span id="spinLabel">가챠 돌리기</span></button>
+    </div>
+  </section>
+
+  <!-- ============ MAKER ============ -->
+  <section id="maker" class="screen">
+    <div class="topnav">
+      <button class="circ" id="makerHome" aria-label="홈으로"><span class="ic" data-ic="home" style=""></span></button>
+      <div class="top-title" style="text-align:center;flex:1;">
+        <div class="top-name" style="font-size:18px;">버킷볼 만들기</div>
+        <div class="top-sub">소중한 꿈을 공에 담아보세요</div>
+      </div>
+      <button class="circ" id="makerMy" aria-label="마이페이지"><span class="ic" data-ic="user" style=""></span></button>
+    </div>
+
+    <div class="scroll sec-pad">
+      <div class="preview-wrap">
+        <div class="pv-card">
+          <div class="holo-streak"></div>
+          <div style="position:relative;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <span class="card-badge">NEW</span><span class="card-no">no.--</span>
+            </div>
+            <div class="media" style="height:124px;">
+              <span id="pvIcon" class="ic" data-ic="plane-tilt" style="font-size:56px;color:var(--warm);"></span>
+              <img id="pvPhoto" alt="">
+            </div>
+            <div style="margin-top:11px;background:rgba(255,255,255,0.5);border-radius:13px;padding:10px 12px;">
+              <div id="pvTitle" style="font-size:15px;font-weight:600;color:#A9B8D2;">버킷리스트 제목</div>
+              <div id="pvSub" style="font-size:11px;color:var(--ink2);margin-top:3px;">목표 시기 · 누구와</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <label class="lbl">버킷리스트</label>
+        <input id="inTitle" class="inp" type="text" placeholder="예: 오로라 보러 가기" style="margin-bottom:14px;">
+
+        <label class="lbl">대표 이미지</label>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button id="photoBtn" class="photo-btn"><span class="ic" data-ic="photo" style="font-size:18px;"></span>사진 넣기</button>
+          <button id="photoClear" class="mini-trash" style="display:none;"><span class="ic" data-ic="trash" style=""></span></button>
+          <input id="photoInput" type="file" accept="image/*" style="display:none;">
+        </div>
+        <div style="font-size:11px;color:var(--ink3);margin-bottom:8px;">또는 아이콘 선택</div>
+        <div class="icon-grid" id="iconRow" style="margin-bottom:16px;">
+          <button class="iconPick" data-i="plane-tilt"><span class="ic" data-ic="plane-tilt" style=""></span></button>
+          <button class="iconPick" data-i="mountain"><span class="ic" data-ic="mountain" style=""></span></button>
+          <button class="iconPick" data-i="book"><span class="ic" data-ic="book" style=""></span></button>
+          <button class="iconPick" data-i="heart"><span class="ic" data-ic="heart" style=""></span></button>
+          <button class="iconPick" data-i="home"><span class="ic" data-ic="home" style=""></span></button>
+          <button class="iconPick" data-i="run"><span class="ic" data-ic="run" style=""></span></button>
+          <button class="iconPick" data-i="camera"><span class="ic" data-ic="camera" style=""></span></button>
+          <button class="iconPick" data-i="star"><span class="ic" data-ic="star" style=""></span></button>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-bottom:14px;">
+          <div style="flex:1;"><label class="lbl">예상 비용</label><input id="inCost" class="inp" type="text" placeholder="300만원"></div>
+          <div style="flex:1;"><label class="lbl">목표 시기</label><input id="inWhen" class="inp" type="text" placeholder="내년 겨울"></div>
+        </div>
+        <label class="lbl">누구와 함께</label>
+        <input id="inWho" class="inp" type="text" placeholder="혼자 / 친구 / 가족" style="margin-bottom:10px;">
+        <label class="lbl">왜 하고 싶은지</label>
+        <input id="inWhy" class="inp" type="text" placeholder="이루고 싶은 이유" style="margin-bottom:16px;">
+
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+          <span style="font-size:12px;color:var(--ink3);">오늘 <span id="cntNum" style="color:var(--blue);font-weight:700;">0</span>/10</span>
+        </div>
+        <button id="addBtn" class="btn-primary" style="height:52px;font-size:16px;"><span class="ic" data-ic="confetti" style="font-size:19px;"></span><span id="addLabel">버킷볼 만들기</span></button>
+      </div>
+
+      <div class="sec-head">
+        <span class="sec-title">내가 만든 버킷볼</span>
+        <span class="drag-hint" id="shelfMeta"><span class="ic" data-ic="arrows-move" style=""></span>길게 눌러 순서 변경</span>
+      </div>
+      <div id="shelf" class="shelf"></div>
+      <div id="shelfEmpty" class="empty">아직 만든 버킷볼이 없어요</div>
+    </div>
+  </section>
+
+  <!-- ============ MYPAGE ============ -->
+  <section id="mypage" class="screen">
+    <div class="topnav">
+      <button class="circ" id="myHome" aria-label="홈으로"><span class="ic" data-ic="home" style=""></span></button>
+      <div class="top-title" style="text-align:center;flex:1;">
+        <div class="top-name" style="font-size:18px;">마이페이지</div>
+        <div class="top-sub">내 카드 전시장</div>
+      </div>
+      <button class="circ" id="myAdd" aria-label="버킷볼 만들기"><span class="ic" data-ic="plus" style=""></span></button>
+    </div>
+
+    <div class="scroll sec-pad">
+      <div class="profile">
+        <div class="avatar"><span class="ic" data-ic="mood-smile" style=""></span></div>
+        <div style="flex:1;line-height:1.3;">
+          <div style="font-size:17px;font-weight:700;color:var(--ink);"><span id="profName">버킷리스터</span>님</div>
+          <div style="font-size:12px;color:var(--ink2);">모은 버킷볼 <span id="myTotal" style="color:var(--blue);font-weight:700;">0</span>개</div>
+        </div>
+        <button id="logoutBtn" class="mini-trash" aria-label="로그아웃" style="background:rgba(255,255,255,0.7);"><span class="ic" data-ic="logout" style=""></span></button>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="n" style="color:var(--blue);" id="statTotal">0</div><div class="l">전체 버킷볼</div></div>
+        <div class="stat"><div class="n" style="color:var(--warm);" id="statDrawn">0</div><div class="l">뽑은 카드</div></div>
+        <div class="stat"><div class="n" style="color:var(--green);" id="statDone">0</div><div class="l">이룬 꿈</div></div>
+      </div>
+
+      <div class="sec-title" style="margin:0 2px 12px;">내 카드 전시장</div>
+      <div id="gallery" class="gallery"></div>
+      <div id="galEmpty" class="empty">버킷볼을 만들면 여기에 전시돼요</div>
+    </div>
+  </section>
+
+  <!-- ============ CARD RESULT OVERLAY ============ -->
+  <div id="cardOverlay" class="overlay">
+    <div id="todayTag">오늘의 버킷</div>
+    <div id="cardInner">
+      <div class="glass-card" id="glassCard">
+        <div id="holoShine"></div>
+        <div style="position:relative;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
+            <span class="card-badge" style="font-size:11px;padding:4px 11px;">RARE</span>
+            <span class="card-no" id="cardNo" style="font-size:14px;">no.01</span>
+          </div>
+          <div class="media" style="height:158px;">
+            <span id="cardIcon" class="ic" data-ic="plane-tilt" style="font-size:66px;color:var(--warm);"></span>
+            <img id="cardPhoto" alt="">
+          </div>
+          <div style="margin-top:14px;background:rgba(255,255,255,0.5);border-radius:16px;padding:13px 15px;">
+            <div id="cardTitle" style="font-size:19px;font-weight:700;color:var(--ink);letter-spacing:-0.3px;">오로라 보러 가기</div>
+            <div id="cardSub" style="font-size:13px;color:var(--ink2);margin-top:5px;">내년 겨울 · 혼자</div>
+            <div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap;">
+              <span id="cardCost" class="chip cost">예상 비용 300만원</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="cardBtns" class="ov-btns">
+      <button class="ov-btn ghost" id="closeCard">닫기</button>
+      <button class="ov-btn solid" id="goMyBtn">전시장에서 보기</button>
+    </div>
+  </div>
+
+  <!-- ============ DETAIL SHEET ============ -->
+  <div id="detailSheet">
+    <div class="sheet" id="sheetBody"></div>
+  </div>
+
+  <div id="toast"></div>
+</div>
+
+<script>
+(function(){
+  var ICON_PATHS={
+  'antenna-bars-5':'M6 18l0 -3M10 18l0 -6M14 18l0 -9M18 18l0 -12',
+  'wifi':'M12 18l.01 0M9.172 15.172a4 4 0 0 1 5.656 0M6.343 12.343a8 8 0 0 1 11.314 0M3.515 9.515c4.686 -4.687 12.284 -4.687 17 0',
+  'plus':'M12 5l0 14M5 12l14 0',
+  'user':'M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2',
+  'home':'M5 12l-2 0l9 -9l9 9l-2 0M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6',
+  'arrow-right':'M5 12l14 0M13 18l6 -6M13 6l6 6',
+  'rotate-clockwise':'M4.05 11a8 8 0 1 1 .5 4M4.05 11v-4M4.05 11h4',
+  'hand-finger':'M8 13v-7.5a1.5 1.5 0 0 1 3 0v6.5M11 11.5v-2a1.5 1.5 0 1 1 3 0v2.5M14 10.5a1.5 1.5 0 0 1 3 0v1.5M17 11.5a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1 -6 6h-2h.208a6 6 0 0 1 -5.012 -2.7l-.196 -.3c-.312 -.479 -1.407 -2.388 -3.286 -5.728a1.5 1.5 0 0 1 .536 -2.022a1.867 1.867 0 0 1 2.28 .28l1.92 1.92',
+  'photo':'M15 8h.01M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3zM3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3',
+  'check':'M5 12l5 5l10 -10',
+  'trash':'M4 7l16 0M10 11l0 6M14 11l0 6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3',
+  'confetti':'M4 5h2M5 4v2M11.5 7l.5 2M18 5h2M19 4v2M15 9l-1 1M18 13l2 -.5M18 19h2M19 18v2M14.5 4l2.5 16l-11 -2z',
+  'arrows-move':'M18 9l3 3l-3 3M15 12h6M6 9l-3 3l3 3M3 12h6M9 18l3 3l3 -3M12 15v6M9 6l3 -3l3 3M12 3v6',
+  'mood-smile':'M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0M9 10l.01 0M15 10l.01 0M9.5 15a3.5 3.5 0 0 0 5 0',
+  'logout':'M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2M9 12h12l-3 -3M21 12l-3 3',
+  'cards':'M3.604 7.197l7.138 -3.109a.96 .96 0 0 1 1.27 .527l4.924 11.902a1 1 0 0 1 -.514 1.304l-7.137 3.109a.96 .96 0 0 1 -1.271 -.527l-4.924 -11.902a1 1 0 0 1 .514 -1.304zM15 4h1a1 1 0 0 1 1 1v3.5M20 6c.264 .112 .52 .217 .768 .315a1 1 0 0 1 .53 1.311l-2.298 5.374',
+  'lock':'M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2zM11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0M8 11v-4a4 4 0 1 1 8 0v4',
+  'trophy':'M8 21l8 0M12 17l0 4M7 4l10 0M17 4v8a5 5 0 0 1 -10 0v-8M5 9a2 2 0 0 1 -2 -2v-1a1 1 0 0 1 1 -1h2M19 9a2 2 0 0 0 2 -2v-1a1 1 0 0 0 -1 -1h-2',
+  'edit':'M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415zM16 5l3 3',
+  'plane-tilt':'M14.639 10.258l4.83 -1.294a2 2 0 1 1 1.035 3.863l-4.83 1.294l-4.418 6.103l-2.899 .776l-1.121 -4.184l-1.96 -7.32l2.899 -.776l5.591 3.45l4.83 -1.294',
+  'mountain':'M8 3l4 8l5 -5l5 14h-20l5 -17',
+  'book':'M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0M3 6l0 13M12 6l0 13M21 6l0 13',
+  'heart':'M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572',
+  'run':'M13 4m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0M4 17l5 1l.75 -1.5M15 21l0 -4l-4 -3l1 -6M7 12l0 -3l5 -1l3 3l3 1',
+  'camera':'M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2M9 13a3 3 0 1 0 6 0a3 3 0 0 0 -6 0',
+  'star':'M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873z',
+  'rotate':'M19.95 11a8 8 0 1 0 -.5 4M19.95 11v-4M19.95 11h-4'
+  };
+  function svgFor(name){
+    var p=ICON_PATHS[name]||ICON_PATHS['check'];
+    return '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;"><path d="'+p+'"/></svg>';
+  }
+  function drawIcon(el){ if(el){ el.innerHTML=svgFor(el.dataset.ic); } }
+  function hydrateIcons(root){ (root||document).querySelectorAll('.ic').forEach(drawIcon); }
+
+  var STORE='bucketball_v1';
+  var state={ name:'', balls:[], dailyMade:0, lastMakeDay:'', usedToday:false, lastSpinDay:'', todayCount:0 };
+  var ICON_COLORS={'plane-tilt':'#E08A4D','mountain':'#5FB89A','book':'#7E8FD6','heart':'#D4789A','home':'#5B8DE0','run':'#E0A24D','camera':'#6FB0C8','star':'#E0C24D'};
+
+  function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+  function load(){
+    try{ var s=JSON.parse(localStorage.getItem(STORE)); if(s){ state=Object.assign(state,s); } }catch(e){}
+    if(state.lastMakeDay!==todayStr()){ state.dailyMade=0; state.lastMakeDay=todayStr(); }
+    if(state.lastSpinDay!==todayStr()){ state.usedToday=false; }
+  }
+  function save(){ try{ localStorage.setItem(STORE, JSON.stringify(state)); }catch(e){} }
+
+  function $(id){ return document.getElementById(id); }
+  function show(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); });
+    $(id).classList.add('on');
+    if(id==='maker'){ renderShelf(); updatePreview(); }
+    if(id==='mypage'){ renderGallery(); }
+    if(id==='gacha'){ refreshGacha(); }
+  }
+  function toast(msg){ var t=$('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(function(){ t.classList.remove('on'); },1900); }
+  function hexA(hex,a){ var n=parseInt(hex.slice(1),16); return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'; }
+  function colorOf(b){ return b.photo?'#5B8DE0':(ICON_COLORS[b.icon]||'#3F6FC4'); }
+
+  /* ---------------- ONBOARDING ---------------- */
+  $('startBtn').addEventListener('click', function(){
+    var n=$('nameInput').value.trim();
+    state.name=n||'버킷리스터';
+    $('profName').textContent=state.name;
+    save(); show('gacha');
+  });
+  $('nameInput').addEventListener('keydown',function(e){ if(e.key==='Enter'){ $('startBtn').click(); } });
+
+  /* ---------------- NAV ---------------- */
+  $('navAdd').addEventListener('click',function(){ show('maker'); });
+  $('navMy').addEventListener('click',function(){ show('mypage'); });
+  $('makerHome').addEventListener('click',function(){ show('gacha'); });
+  $('makerMy').addEventListener('click',function(){ show('mypage'); });
+  $('myHome').addEventListener('click',function(){ show('gacha'); });
+  $('myAdd').addEventListener('click',function(){ show('maker'); });
+  $('logoutBtn').addEventListener('click',function(){
+    if(confirm('로그아웃하면 이 기기에서 정보를 다시 불러올 수 없을 수 있어요. 계속할까요?')){
+      localStorage.removeItem(STORE); location.reload();
+    }
+  });
+
+  /* ---------------- MAKER ---------------- */
+  var pickedIcon='plane-tilt', pickedPhoto=null, editingId=null;
+  var iconBtns=document.querySelectorAll('.iconPick');
+  function highlightIcon(){ iconBtns.forEach(function(b){ b.classList.toggle('sel', b.dataset.i===pickedIcon && !pickedPhoto); }); }
+  iconBtns.forEach(function(b){ b.addEventListener('click',function(){ pickedIcon=b.dataset.i; pickedPhoto=null; clearPhotoUI(); highlightIcon(); updatePreview(); }); });
+
+  $('photoBtn').addEventListener('click',function(){ $('photoInput').click(); });
+  $('photoInput').addEventListener('change',function(e){
+    var f=e.target.files[0]; if(!f) return;
+    var r=new FileReader();
+    r.onload=function(ev){ shrinkImage(ev.target.result, function(small){ pickedPhoto=small; showPhotoUI(); highlightIcon(); updatePreview(); }); };
+    r.readAsDataURL(f);
+  });
+  function shrinkImage(dataUrl, cb){
+    var img=new Image();
+    img.onload=function(){
+      var max=520, w=img.width, h=img.height;
+      if(w>h && w>max){ h=h*max/w; w=max; } else if(h>max){ w=w*max/h; h=max; }
+      var c=document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      cb(c.toDataURL('image/jpeg',0.82));
+    };
+    img.src=dataUrl;
+  }
+  function showPhotoUI(){ var b=$('photoBtn'); b.classList.add('done'); b.innerHTML='<span class="ic" data-ic="check" style="font-size:18px;"></span>사진 적용됨'; $('photoClear').style.display='block'; }
+  function clearPhotoUI(){ var b=$('photoBtn'); b.classList.remove('done'); b.innerHTML='<span class="ic" data-ic="photo" style="font-size:18px;"></span>사진 넣기'; $('photoClear').style.display='none'; }
+  $('photoClear').addEventListener('click',function(){ pickedPhoto=null; clearPhotoUI(); highlightIcon(); updatePreview(); });
+
+  function updatePreview(){
+    var t=$('inTitle').value.trim(), when=$('inWhen').value.trim(), who=$('inWho').value.trim();
+    $('pvTitle').textContent=t||'버킷리스트 제목';
+    $('pvTitle').style.color=t?'var(--ink)':'#A9B8D2';
+    $('pvSub').textContent=(when||'목표 시기')+' · '+(who||'누구와');
+    var icon=$('pvIcon'), photo=$('pvPhoto');
+    if(pickedPhoto){ photo.src=pickedPhoto; photo.style.display='block'; icon.style.display='none'; }
+    else { photo.style.display='none'; icon.style.display='block'; icon.dataset.ic=pickedIcon; icon.style.color=ICON_COLORS[pickedIcon]; drawIcon(icon); }
+  }
+  ['inTitle','inWhen','inWho'].forEach(function(id){ $(id).addEventListener('input',updatePreview); });
+
+  function resetForm(){
+    ['inTitle','inCost','inWhen','inWho','inWhy'].forEach(function(id){ $(id).value=''; });
+    pickedPhoto=null; pickedIcon='plane-tilt'; editingId=null; clearPhotoUI(); highlightIcon(); updatePreview();
+    $('addLabel').textContent='버킷볼 만들기';
+  }
+
+  $('addBtn').addEventListener('click',function(){
+    var title=$('inTitle').value.trim();
+    if(!title){ $('inTitle').focus(); toast('버킷리스트 제목을 입력해 주세요'); return; }
+    var payload={ title:title, icon:pickedIcon, photo:pickedPhoto,
+      cost:$('inCost').value.trim()||'미정', when:$('inWhen').value.trim()||'언젠가',
+      who:$('inWho').value.trim()||'혼자', why:$('inWhy').value.trim()||'', };
+    if(editingId!==null){
+      var b=state.balls.find(function(x){ return x.id===editingId; });
+      if(b){ Object.assign(b,payload); }
+      toast('버킷볼을 수정했어요');
+    } else {
+      if(state.dailyMade>=10){ toast('오늘은 10개를 다 만들었어요. 내일 입력해주세요'); return; }
+      payload.id=Date.now()+Math.floor(Math.random()*999);
+      payload.drawn=false; payload.done=false;
+      state.balls.push(payload);
+      state.dailyMade++;
+      toast('버킷볼이 만들어졌어요!');
+    }
+    $('cntNum').textContent=state.dailyMade;
+    save(); resetForm(); renderShelf();
+  });
+
+  function ballMarkup(b, idx, withName){
+    var media = b.photo
+      ? '<img src="'+b.photo+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;z-index:1;">'
+      : '<div class="inside" style="color:'+colorOf(b)+';"><span class="ic" data-ic="'+b.icon+'" style="font-size:26px;"></span></div>';
+    var c=colorOf(b);
+    var grad='radial-gradient(circle at 34% 28%, rgba(255,255,255,0.95), '+hexA(c,0.45)+' 60%, '+hexA(c,0.65)+')';
+    var html='<div class="shelf-item" data-id="'+b.id+'">'+
+      '<div class="shelf-ball" style="background:'+grad+';">'+media+
+        '<span class="rank">'+(idx+1)+'</span>'+
+        (b.done?'<div class="done-ring"></div><div class="check-badge"><span class="ic" data-ic="check" style=""></span></div>':'')+
+      '</div>';
+    if(withName){ html+='<div class="shelf-name">'+b.title+'</div>'; }
+    html+='</div>';
+    return html;
+  }
+
+  function renderShelf(){
+    var shelf=$('shelf'), empty=$('shelfEmpty');
+    $('cntNum').textContent=state.dailyMade;
+    $('shelfMeta').style.display=state.balls.length>1?'flex':'none';
+    if(state.balls.length===0){ shelf.innerHTML=''; empty.style.display='block'; return; }
+    empty.style.display='none';
+    shelf.innerHTML=state.balls.map(function(b,i){ return ballMarkup(b,i,true); }).join('');
+    hydrateIcons(shelf); bindShelf();
+  }
+
+  /* drag reorder (long-press) */
+  var dragId=null, dragEl=null;
+  function bindShelf(){
+    document.querySelectorAll('#shelf .shelf-item').forEach(function(el){
+      var pressTimer=null, moved=false, startY=0;
+      el.addEventListener('click',function(){ if(!dragEl && !moved){ openDetail(parseInt(el.dataset.id,10)); } });
+      el.addEventListener('touchstart',function(e){
+        moved=false; startY=e.touches[0].clientY;
+        pressTimer=setTimeout(function(){ dragId=parseInt(el.dataset.id,10); dragEl=el; el.classList.add('dragging'); if(navigator.vibrate)navigator.vibrate(20); },350);
+      },{passive:true});
+      el.addEventListener('touchmove',function(e){
+        if(Math.abs(e.touches[0].clientY-startY)>8){ moved=true; clearTimeout(pressTimer); }
+        if(dragEl){ e.preventDefault(); var t=document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY); var over=t&&t.closest('.shelf-item'); if(over&&over!==dragEl){ reorder(parseInt(over.dataset.id,10)); } }
+      },{passive:false});
+      el.addEventListener('touchend',function(){ clearTimeout(pressTimer); if(dragEl){ dragEl.classList.remove('dragging'); dragEl=null; dragId=null; save(); toast('순서를 바꿨어요'); } });
+    });
+  }
+  function reorder(overId){
+    var from=state.balls.findIndex(function(b){ return b.id===dragId; });
+    var to=state.balls.findIndex(function(b){ return b.id===overId; });
+    if(from<0||to<0||from===to) return;
+    var item=state.balls.splice(from,1)[0];
+    state.balls.splice(to,0,item);
+    renderShelf();
+    dragEl=document.querySelector('#shelf .shelf-item[data-id="'+dragId+'"]');
+    if(dragEl)dragEl.classList.add('dragging');
+  }
+
+  /* ---------------- MYPAGE ---------------- */
+  function renderGallery(){
+    var gal=$('gallery'), empty=$('galEmpty');
+    $('profName').textContent=state.name||'버킷리스터';
+    $('myTotal').textContent=state.balls.length;
+    $('statTotal').textContent=state.balls.length;
+    $('statDrawn').textContent=state.balls.filter(function(b){return b.drawn;}).length;
+    $('statDone').textContent=state.balls.filter(function(b){return b.done;}).length;
+    if(state.balls.length===0){ gal.innerHTML=''; empty.style.display='block'; return; }
+    empty.style.display='none';
+    gal.innerHTML=state.balls.map(function(b,i){
+      var media=b.photo?'<img src="'+b.photo+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">':'<span class="ic" data-ic="'+b.icon+'" style="font-size:34px;color:'+colorOf(b)+';"></span>';
+      var badge=b.done?'<span class="chip done" style="font-size:9px;padding:2px 7px;">달성</span>':(b.drawn?'<span class="card-badge" style="font-size:9px;">RARE</span>':'<span class="card-badge" style="font-size:9px;background:rgba(157,176,206,0.25);color:#6B7E9E;">미공개</span>');
+      return '<div class="gal-card'+(b.drawn||b.done?'':' locked')+'" data-id="'+b.id+'">'+
+        '<div class="holo-streak" style="z-index:3;"></div>'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;position:relative;">'+
+          badge+'<span style="font-size:11px;color:#7C92B6;">no.'+(i+1<10?'0':'')+(i+1)+'</span></div>'+
+        '<div class="media" style="height:72px;position:relative;">'+media+
+          (b.done?'<div style="position:absolute;inset:0;background:rgba(95,184,154,0.12);"></div><div class="check-badge" style="bottom:4px;right:4px;"><span class="ic" data-ic="check" style=""></span></div>':'')+
+          (!b.drawn&&!b.done?'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(157,176,206,0.18);"><span class="ic" data-ic="lock" style="font-size:22px;color:#8A9CBC;"></span></div>':'')+
+        '</div>'+
+        '<div style="font-size:12px;font-weight:600;color:var(--ink);margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;">'+b.title+'</div>'+
+        '<div style="font-size:10px;color:#8497B5;margin-top:2px;position:relative;">'+b.when+' · '+b.who+'</div></div>';
+    }).join('');
+    hydrateIcons(gal);
+    document.querySelectorAll('#gallery .gal-card').forEach(function(el){ el.addEventListener('click',function(){ openDetail(parseInt(el.dataset.id,10)); }); });
+  }
+
+  /* ---------------- DETAIL SHEET ---------------- */
+  function openDetail(id){
+    var b=state.balls.find(function(x){ return x.id===id; });
+    if(!b) return;
+    var idx=state.balls.findIndex(function(x){ return x.id===id; });
+    var media=b.photo?'<img src="'+b.photo+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">':'<span class="ic" data-ic="'+b.icon+'" style="font-size:74px;color:'+colorOf(b)+';"></span>';
+    var banner = b.done
+      ? '<div class="status-banner done"><span class="ic" data-ic="trophy" style=""></span>버킷리스트 달성! 축하해요</div>'
+      : (b.drawn ? '<div class="status-banner drawn"><span class="ic" data-ic="cards" style=""></span>가챠에서 뽑은 카드예요</div>'
+                 : '<div class="status-banner locked"><span class="ic" data-ic="lock" style=""></span>아직 가챠에서 뽑히지 않은 버킷볼이에요</div>');
+    var rows='';
+    rows+=infoRow('목표 시기', b.when);
+    rows+=infoRow('누구와', b.who);
+    rows+=infoRow('예상 비용', b.cost);
+    if(b.why) rows+=infoRow('이루고 싶은 이유', b.why);
+    var html='<div class="grab"></div>'+
+      '<div class="detail-card">'+
+        '<div class="holo-streak"></div>'+
+        '<div style="position:relative;">'+
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'+
+            '<span class="chip '+(b.done?'done':'dday')+'">'+(b.done?'달성 완료':'no.'+(idx+1<10?'0':'')+(idx+1))+'</span>'+
+            '<span class="card-no">'+b.when+'</span></div>'+
+          '<div class="media detail-media">'+media+(b.done?'<div class="check-badge" style="width:30px;height:30px;font-size:17px;bottom:8px;right:8px;"><span class="ic" data-ic="check" style=""></span></div>':'')+'</div>'+
+          '<div style="font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-0.4px;">'+b.title+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="margin-top:16px;">'+banner+'</div>'+
+      '<div style="background:rgba(255,255,255,0.55);border-radius:18px;padding:4px 14px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.9);">'+rows+'</div>'+
+      '<div class="detail-actions">'+
+        '<button class="da achieve'+(b.done?' undo':'')+'" id="dAchieve"><span class="ic" data-ic="'+(b.done?'rotate':'trophy')+'"></span>'+(b.done?'달성 취소':'버킷리스트 달성')+'</button>'+
+        '<button class="da edit" id="dEdit"><span class="ic" data-ic="edit" style=""></span>수정</button>'+
+        '<button class="da del" id="dDel" aria-label="삭제"><span class="ic" data-ic="trash" style=""></span></button>'+
+      '</div>';
+    $('sheetBody').innerHTML=html;
+    hydrateIcons($('sheetBody'));
+    $('detailSheet').classList.add('on');
+    $('dAchieve').addEventListener('click',function(){
+      b.done=!b.done; if(b.done){ b.drawn=true; }
+      save(); closeDetail();
+      toast(b.done?'🎉 버킷리스트 달성을 축하해요!':'달성을 취소했어요');
+      if($('mypage').classList.contains('on'))renderGallery(); else renderShelf();
+    });
+    $('dEdit').addEventListener('click',function(){ startEdit(b); closeDetail(); });
+    $('dDel').addEventListener('click',function(){
+      if(confirm('이 버킷볼을 삭제할까요?')){
+        state.balls=state.balls.filter(function(x){ return x.id!==id; });
+        save(); closeDetail(); toast('삭제했어요');
+        renderGallery(); renderShelf();
+      }
+    });
+  }
+  function infoRow(k,v){ return '<div class="info-row"><span class="k">'+k+'</span><span class="v">'+(v||'-')+'</span></div>'; }
+  function closeDetail(){ $('detailSheet').classList.remove('on'); }
+  $('detailSheet').addEventListener('click',function(e){ if(e.target===$('detailSheet')) closeDetail(); });
+
+  function startEdit(b){
+    show('maker');
+    editingId=b.id;
+    $('inTitle').value=b.title; $('inCost').value=(b.cost==='미정'?'':b.cost);
+    $('inWhen').value=(b.when==='언젠가'?'':b.when); $('inWho').value=(b.who==='혼자'?'':b.who);
+    $('inWhy').value=b.why||'';
+    if(b.photo){ pickedPhoto=b.photo; showPhotoUI(); } else { pickedIcon=b.icon; pickedPhoto=null; clearPhotoUI(); }
+    highlightIcon(); updatePreview();
+    $('addLabel').textContent='수정 완료';
+    $('scroll'); var sc=document.querySelector('#maker .scroll'); if(sc)sc.scrollTop=0;
+  }
+
+  /* ---------------- GACHA ---------------- */
+  var spinning=false, picked=null, ballCounted=false;
+  var lever=$('lever'), machine=$('machine'), ballEl=$('ball'), hint=$('hint');
+  var statusText=$('statusText'), spinBtn=$('spinBtn'), dots=document.querySelectorAll('#dots .dot');
+  var caps=document.querySelectorAll('.cap');
+
+  function refreshGacha(){
+    if(state.usedToday){ lockGacha(); }
+    else {
+      spinning=false; picked=null; ballCounted=false;
+      ballEl.style.opacity='0'; ballEl.style.transform='translateX(-50%) scale(0.5)'; ballEl.style.bottom='14px';
+      hint.style.opacity='0';
+      dots.forEach(function(d){ d.style.background='#C2D2EC'; });
+      $('spinLabel').textContent='가챠 돌리기'; statusText.textContent='오늘 1번 뽑을 수 있어요';
+      spinBtn.classList.remove('dim'); spinBtn.style.cursor='pointer';
+    }
+  }
+  function lockGacha(){
+    $('spinLabel').textContent='오늘 완료!'; statusText.textContent='내일 다시 뽑을 수 있어요';
+    spinBtn.classList.add('dim'); dots.forEach(function(d){ d.style.background='#6E97D6'; });
+  }
+
+  function rattle(cb){
+    var start=performance.now();
+    function shake(t){ var e=t-start;
+      if(e<280){ var damp=(1-e/280), s=Math.sin(e*0.13)*damp*2.4; machine.style.transform='translateX(0) translateX('+s+'px)';
+        for(var i=0;i<caps.length;i++){ caps[i].style.transform='translate('+(Math.sin(e*0.2+i)*damp*2)+'px,'+(Math.cos(e*0.25+i)*damp*1.5)+'px)'; }
+        requestAnimationFrame(shake);
+      } else { machine.style.transform='translateX(0)'; for(var j=0;j<caps.length;j++){ caps[j].style.transform='translate(0,0)'; } cb&&cb(); } }
+    requestAnimationFrame(shake);
+  }
+  function oneTurn(index,done){
+    var startRot=index*360,t0=performance.now(),dur=470;
+    function step(t){ var p=Math.min((t-t0)/dur,1),ease=1-Math.pow(1-p,3); lever.style.transform='rotate('+(startRot+ease*360)+'deg)';
+      if(p<1){ requestAnimationFrame(step); } else { lever.style.transform='rotate('+((index+1)*360)+'deg)'; dots[index].style.background='#6E97D6'; rattle(function(){ setTimeout(done,170); }); } }
+    requestAnimationFrame(step);
+  }
+  function spin(){
+    if(spinning||state.usedToday) return;
+    var pool=state.balls;
+    if(pool.length===0){ toast('먼저 버킷볼을 만들어 주세요'); show('maker'); return; }
+    spinning=true; $('spinLabel').textContent='돌리는 중...'; statusText.textContent='드르륵... 드르륵...';
+    if(navigator.vibrate)navigator.vibrate(15);
+    oneTurn(0,function(){ oneTurn(1,function(){ oneTurn(2,function(){ statusText.textContent='공이 나와요!'; setTimeout(dropBall,150); });});});
+  }
+  function dropBall(){
+    var undrawn=state.balls.filter(function(b){ return !b.done; });
+    var pool=undrawn.length?undrawn:state.balls;
+    picked=pool[Math.floor(Math.random()*pool.length)];
+    ballEl.style.opacity='1'; ballEl.style.transition='bottom .5s cubic-bezier(0.5,0,0.7,1), transform .5s ease';
+    ballEl.getBoundingClientRect();
+    requestAnimationFrame(function(){ ballEl.style.bottom='2px'; ballEl.style.transform='translateX(-50%) scale(1)';
+      setTimeout(function(){ ballEl.style.transition='bottom .16s ease'; ballEl.style.bottom='10px';
+        setTimeout(function(){ ballEl.style.bottom='2px'; spinDone(); },160); },500); });
+  }
+  function spinDone(){
+    spinning=false; state.usedToday=true; state.lastSpinDay=todayStr(); save();
+    hint.style.opacity='1'; lockGacha();
+  }
+
+  /* ---------------- RESULT OVERLAY ---------------- */
+  var overlay=$('cardOverlay'), cardInner=$('cardInner'), todayTag=$('todayTag'), cardBtns=$('cardBtns');
+  var glassCard=$('glassCard'), holoShine=$('holoShine');
+  function openCard(){
+    if(!picked) return;
+    var ic=$('cardIcon'), ph=$('cardPhoto');
+    if(picked.photo){ ph.src=picked.photo; ph.style.display='block'; ic.style.display='none'; }
+    else { ph.style.display='none'; ic.style.display='block'; ic.dataset.ic=picked.icon; ic.style.color=ICON_COLORS[picked.icon]; drawIcon(ic); }
+    $('cardTitle').textContent=picked.title;
+    $('cardSub').textContent=picked.when+' · '+picked.who;
+    $('cardCost').textContent='예상 비용 '+picked.cost;
+    overlay.classList.add('on');
+    requestAnimationFrame(function(){ cardInner.style.transform='scale(1) rotate(0deg)'; cardInner.style.opacity='1';
+      setTimeout(function(){ todayTag.style.opacity='1'; cardBtns.style.opacity='1'; startHolo(); },400); });
+    if(!ballCounted){ picked.drawn=true; save(); ballCounted=true; }
+  }
+  var holoT=0,holoRAF;
+  function startHolo(){ cancelAnimationFrame(holoRAF);
+    function loop(){ holoT+=0.011; var p=(Math.sin(holoT)*0.5+0.5)*100; holoShine.style.backgroundPosition=p+'% '+p+'%';
+      glassCard.style.transform='rotateX('+(Math.sin(holoT*0.8)*5)+'deg) rotateY('+(Math.cos(holoT)*6)+'deg)'; holoRAF=requestAnimationFrame(loop); } loop(); }
+  function closeOverlay(){ cardInner.style.transform='scale(0.55) rotate(-7deg)'; cardInner.style.opacity='0';
+    todayTag.style.opacity='0'; cardBtns.style.opacity='0'; cancelAnimationFrame(holoRAF);
+    setTimeout(function(){ overlay.classList.remove('on'); },350); }
+  $('closeCard').addEventListener('click',closeOverlay);
+  $('goMyBtn').addEventListener('click',function(){ closeOverlay(); setTimeout(function(){ show('mypage'); },360); });
+
+  spinBtn.addEventListener('click',spin);
+  ballEl.addEventListener('click',openCard);
+
+  /* ---------------- BOOT ---------------- */
+  hydrateIcons(document);
+  load();
+  if(state.name){ $('profName').textContent=state.name; show('gacha'); }
+  else { show('onboard'); }
+})();
+</script>
+</body>
+</html>
