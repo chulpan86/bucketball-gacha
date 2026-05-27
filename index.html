@@ -206,7 +206,30 @@
   .sheet{width:100%; max-width:440px; background:linear-gradient(180deg,#F8FBFF,#EAF1FB); border-radius:28px 28px 0 0;
     padding:10px 22px 26px; transform:translateY(100%); transition:transform .4s cubic-bezier(0.32,0.72,0,1); max-height:88%; overflow-y:auto;}
   #detailSheet.on .sheet{transform:translateY(0);}
-  /* install guide */
+  /* tutorial */
+  #tutorial{position:absolute; inset:0; z-index:50; display:none; pointer-events:auto;}
+  #tutorial.on{display:block;}
+  #tutorMask{position:absolute; inset:0; width:100%; height:100%; pointer-events:none;}
+  #tutorRing{position:absolute; border-radius:50%; pointer-events:none;
+    box-shadow:0 0 0 4px rgba(255,255,255,0.9), 0 0 0 7px rgba(91,141,224,0.55), 0 0 30px rgba(91,141,224,0.55);
+    transition:all .42s cubic-bezier(0.34,1.56,0.64,1); opacity:0; animation:tutorPulse 1.8s ease-in-out infinite;}
+  #tutorial.on #tutorRing{opacity:1;}
+  @keyframes tutorPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+  #tutorBubble{position:absolute; left:20px; right:20px; background:linear-gradient(155deg,#FFFFFF,#F1F6FE);
+    border-radius:22px; padding:18px 18px 14px; box-shadow:0 22px 40px rgba(35,52,85,0.45), inset 0 2px 4px rgba(255,255,255,0.9);
+    opacity:0; transform:translateY(10px); transition:opacity .35s, transform .35s; max-width:300px; margin:0 auto;}
+  #tutorial.on #tutorBubble{opacity:1; transform:translateY(0);}
+  .tut-arrow{position:absolute; left:50%; transform:translateX(-50%); width:18px; height:18px; background:#FFFFFF; rotate:45deg;
+    box-shadow:-2px -2px 4px rgba(35,52,85,0.06);}
+  #tutorBubble.below .tut-arrow{top:-7px;}
+  #tutorBubble.above .tut-arrow{bottom:-7px; background:#F1F6FE;}
+  .tut-step{font-size:11px; font-weight:700; color:var(--blue); letter-spacing:1px; margin-bottom:6px;}
+  .tut-title{font-size:18px; font-weight:700; color:var(--ink); letter-spacing:-0.4px; margin-bottom:6px;}
+  .tut-desc{font-size:13px; color:var(--ink2); line-height:1.55; margin-bottom:14px;}
+  .tut-btns{display:flex; gap:8px; align-items:center;}
+  .tut-skip{flex:none; height:38px; padding:0 14px; border:none; background:transparent; color:var(--ink3); font-size:13px; font-weight:600; cursor:pointer; font-family:inherit;}
+  .tut-next{flex:1; height:42px; border:none; border-radius:13px; background:linear-gradient(145deg,#5B8DE0,#3F6FC4); color:#fff; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;
+    box-shadow:0 6px 14px rgba(80,120,200,0.4), inset 0 2px 3px rgba(255,255,255,0.4);}
   #installSheet{position:absolute; inset:0; z-index:46; display:none; align-items:flex-end; justify-content:center;
     background:rgba(45,65,110,0.45); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);}
   #installSheet.on{display:flex;}
@@ -486,6 +509,30 @@
     <div class="sheet" id="sheetBody"></div>
   </div>
 
+  <!-- ============ TUTORIAL OVERLAY ============ -->
+  <div id="tutorial">
+    <svg id="tutorMask" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <defs>
+        <mask id="holeMask">
+          <rect x="0" y="0" width="100" height="100" fill="white"/>
+          <rect id="tutorHole" x="0" y="0" width="0" height="0" rx="2" ry="2" fill="black"/>
+        </mask>
+      </defs>
+      <rect x="0" y="0" width="100" height="100" fill="rgba(35,52,85,0.62)" mask="url(#holeMask)"/>
+    </svg>
+    <div id="tutorRing"></div>
+    <div id="tutorBubble">
+      <div class="tut-arrow"></div>
+      <div class="tut-step"><span id="tutStepN">1</span>/2</div>
+      <div class="tut-title" id="tutTitle">먼저 버킷볼을 만들어요</div>
+      <div class="tut-desc" id="tutDesc">우측 상단 ＋ 버튼을 눌러<br>이루고 싶은 꿈을 버킷볼에 담아요</div>
+      <div class="tut-btns">
+        <button id="tutSkip" class="tut-skip">건너뛰기</button>
+        <button id="tutNext" class="tut-next">다음</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ============ INSTALL GUIDE SHEET ============ -->
   <div id="installSheet">
     <div class="sheet">
@@ -565,7 +612,7 @@
   function hydrateIcons(root){ (root||document).querySelectorAll('.ic').forEach(drawIcon); }
 
   var STORE='bucketball_v1';
-  var state={ name:'', balls:[], dailyMade:0, lastMakeDay:'', usedToday:false, lastSpinDay:'', todayCount:0, installSeen:false };
+  var state={ name:'', balls:[], dailyMade:0, lastMakeDay:'', usedToday:false, lastSpinDay:'', todayCount:0, installSeen:false, tutorialSeen:false };
   var ICON_COLORS={'plane-tilt':'#E08A4D','mountain':'#5FB89A','book':'#7E8FD6','heart':'#D4789A','home':'#5B8DE0','run':'#E0A24D','camera':'#6FB0C8','star':'#E0C24D'};
 
   function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
@@ -612,13 +659,99 @@
   $('installSheet').addEventListener('click',function(e){ if(e.target===$('installSheet')) closeInstall(); });
   $('installBanner').addEventListener('click',openInstall);
 
+  /* ---------------- TUTORIAL ---------------- */
+  var TUT_STEPS=[
+    { target:'#navAdd', title:'먼저 버킷볼을 만들어요', desc:'우측 상단 ＋ 버튼을 눌러<br>이루고 싶은 꿈을 버킷볼에 담아요', pad:6 },
+    { target:'#spinBtn', title:'가챠를 돌려 꺼내봐요', desc:'레버가 세 바퀴 돌아간 후 공이 나와요<br>공을 꾹 누르면 오늘의 버킷이 펼쳐져요', pad:10, shape:'pill' }
+  ];
+  var tutIdx=0;
+  function placeTutor(){
+    var s=TUT_STEPS[tutIdx]; if(!s) return;
+    var el=document.querySelector(s.target); if(!el) return;
+    var app=$('app').getBoundingClientRect();
+    var r=el.getBoundingClientRect();
+    var cx=r.left-app.left+r.width/2, cy=r.top-app.top+r.height/2;
+    var ring=$('tutorRing'), bubble=$('tutorBubble');
+    var pad=s.pad||6;
+    if(s.shape==='pill'){
+      // pill ring for wide buttons
+      var w=r.width+pad*2, h=r.height+pad*2;
+      ring.style.width=w+'px'; ring.style.height=h+'px';
+      ring.style.borderRadius=(h/2)+'px';
+      ring.style.left=(r.left-app.left-pad)+'px';
+      ring.style.top=(r.top-app.top-pad)+'px';
+    } else {
+      var sz=Math.max(r.width,r.height)+pad*2;
+      ring.style.width=sz+'px'; ring.style.height=sz+'px'; ring.style.borderRadius='50%';
+      ring.style.left=(cx-sz/2)+'px'; ring.style.top=(cy-sz/2)+'px';
+    }
+    // SVG hole (percent units)
+    var hole=document.getElementById('tutorHole');
+    var rx=(s.shape==='pill')?(r.height+pad*2)/2:Math.max(r.width,r.height)/2+pad;
+    if(s.shape==='pill'){
+      hole.setAttribute('x', ((r.left-app.left-pad)/app.width*100));
+      hole.setAttribute('y', ((r.top-app.top-pad)/app.height*100));
+      hole.setAttribute('width', ((r.width+pad*2)/app.width*100));
+      hole.setAttribute('height', ((r.height+pad*2)/app.height*100));
+      hole.setAttribute('rx', (rx/app.width*100));
+      hole.setAttribute('ry', (rx/app.height*100));
+    } else {
+      var sz2=Math.max(r.width,r.height)+pad*2;
+      hole.setAttribute('x', ((cx-sz2/2)/app.width*100));
+      hole.setAttribute('y', ((cy-sz2/2)/app.height*100));
+      hole.setAttribute('width', (sz2/app.width*100));
+      hole.setAttribute('height', (sz2/app.height*100));
+      hole.setAttribute('rx', (sz2/2/app.width*100));
+      hole.setAttribute('ry', (sz2/2/app.height*100));
+    }
+    // bubble position: above or below depending on target
+    var below = cy < app.height*0.5;
+    bubble.classList.toggle('below', below);
+    bubble.classList.toggle('above', !below);
+    if(below){ bubble.style.top=(cy+ (s.shape==='pill'?r.height/2:Math.max(r.width,r.height)/2) + pad + 24)+'px'; bubble.style.bottom='auto'; }
+    else { bubble.style.bottom=(app.height - (cy - (s.shape==='pill'?r.height/2:Math.max(r.width,r.height)/2) - pad) + 24)+'px'; bubble.style.top='auto'; }
+    // arrow horizontal align with target center
+    var arrow=document.querySelector('#tutorBubble .tut-arrow');
+    var bRect=bubble.getBoundingClientRect();
+    var arrowLeft = cx - (bRect.left - app.left);
+    arrowLeft = Math.max(20, Math.min(bRect.width-20, arrowLeft));
+    arrow.style.left = arrowLeft+'px';
+    // texts
+    $('tutTitle').innerHTML=s.title;
+    $('tutDesc').innerHTML=s.desc;
+    $('tutStepN').textContent=(tutIdx+1);
+    $('tutNext').textContent = (tutIdx===TUT_STEPS.length-1)?'시작하기':'다음';
+  }
+  function startTutorial(){
+    tutIdx=0;
+    $('tutorial').classList.add('on');
+    requestAnimationFrame(function(){ requestAnimationFrame(placeTutor); });
+  }
+  function endTutorial(){
+    $('tutorial').classList.remove('on');
+    state.tutorialSeen=true; save();
+    // chain to install guide if not seen
+    if(!state.installSeen && !isStandalone()){
+      state.installSeen=true; save();
+      setTimeout(openInstall, 400);
+    }
+  }
+  $('tutNext').addEventListener('click',function(){
+    if(tutIdx<TUT_STEPS.length-1){ tutIdx++; placeTutor(); }
+    else { endTutorial(); }
+  });
+  $('tutSkip').addEventListener('click',endTutorial);
+  window.addEventListener('resize',function(){ if($('tutorial').classList.contains('on')) placeTutor(); });
+
   /* ---------------- ONBOARDING ---------------- */
   $('startBtn').addEventListener('click', function(){
     var n=$('nameInput').value.trim();
     state.name=n||'버킷리스터';
     $('profName').textContent=state.name;
     save(); show('gacha');
-    if(!state.installSeen && !isStandalone()){
+    if(!state.tutorialSeen){
+      setTimeout(startTutorial, 450);
+    } else if(!state.installSeen && !isStandalone()){
       state.installSeen=true; save();
       setTimeout(openInstall, 550);
     }
